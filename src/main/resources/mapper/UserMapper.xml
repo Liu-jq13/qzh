@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kama.notes.mapper.UserMapper">
+<mapper namespace="com.qzh.notes.mapper.UserMapper">
 
-    <select id="findByAccount" resultType="com.kama.notes.model.entity.User">
+    <select id="findByAccount" resultType="com.qzh.notes.model.entity.User">
         SELECT *
         FROM user
         WHERE account = #{account}
@@ -34,13 +34,13 @@
         )
     </insert>
 
-    <select id="findById" resultType="com.kama.notes.model.entity.User">
+    <select id="findById" resultType="com.qzh.notes.model.entity.User">
         SELECT *
         FROM user
         WHERE user_id = #{userId}
     </select>
 
-    <select id="findByIdBatch" resultType="com.kama.notes.model.entity.User">
+    <select id="findByIdBatch" resultType="com.qzh.notes.model.entity.User">
         SELECT *
         FROM user
         WHERE
@@ -75,7 +75,7 @@
         </where>
     </sql>
 
-    <select id="findByQueryParam" resultType="com.kama.notes.model.entity.User">
+    <select id="findByQueryParam" resultType="com.qzh.notes.model.entity.User">
         SELECT *
         FROM user
         <include refid="whereClause"/>
@@ -88,7 +88,7 @@
         <include refid="whereClause" />
     </select>
 
-    <update id="update" parameterType="com.kama.notes.model.dto.user.UpdateUserRequest">
+    <update id="update" parameterType="com.qzh.notes.model.dto.user.UpdateUserRequest">
         UPDATE user
         <set>
             <if test="username != null">username = #{username},</if>
@@ -125,12 +125,12 @@
         FROM user
     </select>
 
-    <select id="findByEmail" resultType="com.kama.notes.model.entity.User">
+    <select id="findByEmail" resultType="com.qzh.notes.model.entity.User">
         SELECT * FROM user WHERE email = #{email}
     </select>
 
     <!-- 搜索用户 -->
-    <select id="searchUsers" resultType="com.kama.notes.model.entity.User">
+    <select id="searchUsers" resultType="com.qzh.notes.model.entity.User">
         SELECT * FROM user 
         WHERE 
             username LIKE CONCAT(#{keyword}, '%')

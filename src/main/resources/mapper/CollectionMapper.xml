@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kama.notes.mapper.CollectionMapper">
+<mapper namespace="com.qzh.notes.mapper.CollectionMapper">
 
-    <select id="findById" resultType="com.kama.notes.model.entity.Collection">
+    <select id="findById" resultType="com.qzh.notes.model.entity.Collection">
         SELECT *
         FROM collection
         WHERE collection_id = #{collectionId}
     </select>
 
-    <select id="findByCreatorId" resultType="com.kama.notes.model.entity.Collection">
+    <select id="findByCreatorId" resultType="com.qzh.notes.model.entity.Collection">
         SELECT *
         FROM collection
         WHERE creator_id = #{creatorId}
     </select>
 
-    <select id="findByIdAndCreatorId" resultType="com.kama.notes.model.entity.Collection">
+    <select id="findByIdAndCreatorId" resultType="com.qzh.notes.model.entity.Collection">
         SELECT *
         FROM collection
         WHERE collection_id = #{collectionId}

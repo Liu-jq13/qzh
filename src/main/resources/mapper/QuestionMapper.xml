@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kama.notes.mapper.QuestionMapper">
+<mapper namespace="com.qzh.notes.mapper.QuestionMapper">
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="questionId"
-            parameterType="com.kama.notes.model.entity.Question">
+            parameterType="com.qzh.notes.model.entity.Question">
         INSERT INTO question (category_id, title, difficulty, exam_point)
         VALUES (#{categoryId}, #{title}, #{difficulty}, #{examPoint})
     </insert>
 
-    <select id="findById" resultType="com.kama.notes.model.entity.Question">
+    <select id="findById" resultType="com.qzh.notes.model.entity.Question">
         SELECT *
         FROM question
         WHERE question_id = #{questionId}
     </select>
 
-    <select id="findByIdBatch" resultType="com.kama.notes.model.entity.Question">
+    <select id="findByIdBatch" resultType="com.qzh.notes.model.entity.Question">
         SELECT * FROM question
         WHERE
         <if test="questionIds != null and questionIds.size > 0">
@@ -41,7 +41,7 @@
         </where>
     </sql>
 
-    <select id="findByQueryParam" resultType="com.kama.notes.model.entity.Question">
+    <select id="findByQueryParam" resultType="com.qzh.notes.model.entity.Question">
         SELECT *
         FROM question
         <include refid="whereClause"/>
@@ -70,7 +70,7 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <select id="findByKeyword" resultType="com.kama.notes.model.entity.Question">
+    <select id="findByKeyword" resultType="com.qzh.notes.model.entity.Question">
         SELECT *
         FROM question
         <choose>

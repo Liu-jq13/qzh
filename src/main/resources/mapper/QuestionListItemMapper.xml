@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kama.notes.mapper.QuestionListItemMapper">
+<mapper namespace="com.qzh.notes.mapper.QuestionListItemMapper">
     <insert id="insert">
         INSERT INTO question_list_item (question_list_id, question_id, `rank`)
         VALUES (#{questionListId}, #{questionId}, #{rank})
     </insert>
 
-    <resultMap id="QuestionListItemVOResultMap" type="com.kama.notes.model.vo.questionListItem.QuestionListItemVO">
+    <resultMap id="QuestionListItemVOResultMap" type="com.qzh.notes.model.vo.questionListItem.QuestionListItemVO">
         <id property="questionListId" column="question_list_id"/>
         <id property="rank" column="rank"/>
         <association property="question"
-                     javaType="com.kama.notes.model.vo.question.BaseQuestionVO">
+                     javaType="com.qzh.notes.model.vo.question.BaseQuestionVO">
             <id property="questionId" column="question.question_id"/>
             <result property="title" column="question.title"/>
             <result property="viewCount" column="question.view_count"/>
@@ -70,7 +70,7 @@
         WHERE `question_list_id` = ${questionListId};
     </select>
 
-    <update id="updateQuestionRank" parameterType="com.kama.notes.model.entity.QuestionListItem">
+    <update id="updateQuestionRank" parameterType="com.qzh.notes.model.entity.QuestionListItem">
         UPDATE `question_list_item`
         SET `rank` = #{rank}
         WHERE `question_list_id` = #{questionListId}

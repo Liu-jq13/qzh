@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kama.notes.mapper.NoteLikeMapper">
+<mapper namespace="com.qzh.notes.mapper.NoteLikeMapper">
     <select id="findUserLikedNoteIds" resultType="integer">
         <if test="noteIds != null and noteIds.size > 0">
             SELECT note_id FROM note_like
@@ -15,7 +15,7 @@
         </if>
     </select>
 
-    <select id="findByUserIdAndNoteId" resultType="com.kama.notes.model.entity.NoteLike">
+    <select id="findByUserIdAndNoteId" resultType="com.qzh.notes.model.entity.NoteLike">
         SELECT *
         FROM note_like
         WHERE user_id = #{userId}

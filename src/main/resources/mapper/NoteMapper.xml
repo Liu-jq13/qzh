@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kama.notes.mapper.NoteMapper">
+<mapper namespace="com.qzh.notes.mapper.NoteMapper">
 
     <sql id="whereClause">
         <where>
@@ -24,7 +24,7 @@
         <include refid="whereClause"/>
     </select>
 
-    <select id="findByQueryParams" resultType="com.kama.notes.model.entity.Note">
+    <select id="findByQueryParams" resultType="com.qzh.notes.model.entity.Note">
         SELECT * FROM note
         <include refid="whereClause"/>
         <choose>
@@ -58,14 +58,14 @@
         </if>
     </select>
 
-    <select id="findByAuthorIdAndQuestionId" resultType="com.kama.notes.model.entity.Note">
+    <select id="findByAuthorIdAndQuestionId" resultType="com.qzh.notes.model.entity.Note">
         SELECT *
         FROM note
         WHERE question_id = #{questionId}
           AND author_id = #{authorId}
     </select>
 
-    <select id="findByAuthorId" resultType="com.kama.notes.model.entity.Note">
+    <select id="findByAuthorId" resultType="com.qzh.notes.model.entity.Note">
         SELECT *
         FROM note
         WHERE author_id = #{authorId}
@@ -76,7 +76,7 @@
         VALUES (#{questionId}, #{authorId}, #{content})
     </insert>
 
-    <resultMap id="BaseResultMap" type="com.kama.notes.model.entity.Note">
+    <resultMap id="BaseResultMap" type="com.qzh.notes.model.entity.Note">
         <id column="note_id" property="noteId"/>
         <result column="author_id" property="authorId"/>
         <result column="question_id" property="questionId"/>
@@ -128,13 +128,13 @@
         WHERE note_id = #{noteId}
     </delete>
 
-    <select id="findCollections" resultType="com.kama.notes.model.entity.Collection">
+    <select id="findCollections" resultType="com.qzh.notes.model.entity.Collection">
         SELECT *
         FROM collection
         WHERE collection_id = #{collectionId}
     </select>
 
-    <resultMap id="NoteRankListItemMap" type="com.kama.notes.model.vo.note.NoteRankListItem">
+    <resultMap id="NoteRankListItemMap" type="com.qzh.notes.model.vo.note.NoteRankListItem">
         <result property="userId" column="author_id"/>
         <result property="username" column="username"/>
         <result property="avatarUrl" column="avatar_url"/>
@@ -155,7 +155,7 @@
         ORDER BY author_notes_count DESC LIMIT 10
     </select>
 
-    <resultMap id="submitNoteHeatMapMap" type="com.kama.notes.model.vo.note.NoteHeatMapItem">
+    <resultMap id="submitNoteHeatMapMap" type="com.qzh.notes.model.vo.note.NoteHeatMapItem">
         <result property="count" column="note_count"/>
         <result property="date" column="note_date"/>
         <result property="rank" column="note_rank"/>
@@ -185,7 +185,7 @@
         WHERE author_id = #{authorId};
     </select>
 
-    <resultMap id="submitNoteTop3CountMap" type="com.kama.notes.model.vo.note.Top3Count">
+    <resultMap id="submitNoteTop3CountMap" type="com.qzh.notes.model.vo.note.Top3Count">
         <result property="thisMonthTop3Count" column="this_month_top_3"/>
         <result property="lastMonthTop3Count" column="last_month_top_3"/>
     </resultMap>
@@ -268,7 +268,7 @@
     </update>
 
     <!-- 搜索笔记 -->
-    <select id="searchNotes" resultType="com.kama.notes.model.entity.Note">
+    <select id="searchNotes" resultType="com.qzh.notes.model.entity.Note">
         SELECT 
             n.*,
             MATCH(n.search_vector) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE) as relevance
@@ -279,7 +279,7 @@
     </select>
 
     <!-- 根据标签搜索笔记 -->
-    <select id="searchNotesByTag" resultType="com.kama.notes.model.entity.Note">
+    <select id="searchNotesByTag" resultType="com.qzh.notes.model.entity.Note">
         SELECT DISTINCT
             n.*,
             MATCH(n.search_vector) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE) as relevance
