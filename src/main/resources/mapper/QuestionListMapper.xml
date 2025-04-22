@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.QuestionListMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="questionListId">
+        INSERT INTO question_list (name, type, description)
+        VALUES (#{name}, #{type}, #{description})
+    </insert>
+
+    <update id="update">
+        UPDATE question_list
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+        </set>
+        WHERE question_list_id = #{questionListId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM question_list WHERE question_list_id = #{questionListId}
+    </delete>
+
+    <select id="findById" resultType="com.kama.notes.model.entity.QuestionList">
+        SELECT * FROM question_list WHERE question_list_id = #{questionListId}
+    </select>
+
+    <select id="findAll" resultType="com.kama.notes.model.entity.QuestionList">
+        SELECT * FROM question_list
+    </select>
+</mapper>

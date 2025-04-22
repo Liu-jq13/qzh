@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.QuestionMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="questionId"
+            parameterType="com.kama.notes.model.entity.Question">
+        INSERT INTO question (category_id, title, difficulty, exam_point)
+        VALUES (#{categoryId}, #{title}, #{difficulty}, #{examPoint})
+    </insert>
+
+    <select id="findById" resultType="com.kama.notes.model.entity.Question">
+        SELECT *
+        FROM question
+        WHERE question_id = #{questionId}
+    </select>
+
+    <select id="findByIdBatch" resultType="com.kama.notes.model.entity.Question">
+        SELECT * FROM question
+        WHERE
+        <if test="questionIds != null and questionIds.size > 0">
+            question_id IN
+            <foreach collection="questionIds" item="questionId" open="(" separator="," close=")">
+                #{questionId}
+            </foreach>
+        </if>
+        <if test="questionIds == null or questionIds.size == 0">
+            1 = 2 <!-- 当 questionIds 为空时，返回一个永远不成立的条件 -->
+        </if>
+    </select>
+
+    <sql id="whereClause">
+        <where>
+            <if test="queryParam.categoryId != null">
+                (category_id = #{queryParam.categoryId}
+                OR category_id IN (
+                    SELECT category_id
+                    FROM category
+                    WHERE parent_category_id = #{queryParam.categoryId}
+                ))
+            </if>
+        </where>
+    </sql>
+
+    <select id="findByQueryParam" resultType="com.kama.notes.model.entity.Question">
+        SELECT *
+        FROM question
+        <include refid="whereClause"/>
+        <choose>
+            <when test="queryParam.sort == 'view'">
+                ORDER BY view_count
+            </when>
+            <when test="queryParam.sort == 'difficulty'">
+                ORDER BY difficulty
+            </when>
+            <otherwise>
+                ORDER BY created_at
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="queryParam.order == 'asc'">
+                ASC
+            </when>
+            <when test="queryParam.order == 'desc'">
+                DESC
+            </when>
+            <otherwise>
+                ASC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="findByKeyword" resultType="com.kama.notes.model.entity.Question">
+        SELECT *
+        FROM question
+        <choose>
+            <when test="keyword != null">
+                WHERE title LIKE CONCAT('%', #{keyword}, '%')
+            </when>
+            <otherwise>
+                WHERE 1 = 2
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="update">
+        UPDATE question
+        <set>
+            <if test="question.title != null">
+                title = #{question.title},
+            </if>
+            <if test="question.difficulty != null">
+                difficulty = #{question.difficulty},
+            </if>
+            <if test="question.examPoint != null">
+                exam_point = #{question.examPoint},
+            </if>
+        </set>
+        WHERE question_id = #{question.questionId}
+    </update>
+
+    <update id="incrementViewCount">
+        UPDATE question
+        SET view_count = view_count + 1
+        WHERE question_id = #{questionId}
+    </update>
+
+    <select id="countByQueryParam" resultType="int">
+        SELECT COUNT(*)
+        FROM question
+        <include refid="whereClause"/>
+    </select>
+
+    <delete id="deleteByCategoryId">
+        DELETE
+        FROM question
+        WHERE category_id = #{categoryId}
+    </delete>
+
+
+    <delete id="deleteById">
+        DELETE
+        FROM question
+        WHERE question_id = #{questionId}
+    </delete>
+
+    <delete id="deleteByCategoryIdBatch">
+        <if test="categoryIds != null and categoryIds.size > 0">
+            DELETE
+            FROM question
+            WHERE category_id IN
+            <foreach collection="categoryIds" item="categoryId" open="(" separator="," close=")">
+                #{categoryId}
+            </foreach>
+        </if>
+        <if test="categoryIds == null or categoryIds.size == 0">
+            DELETE FROM question WHERE 1 = 0
+        </if>
+    </delete>
+</mapper>

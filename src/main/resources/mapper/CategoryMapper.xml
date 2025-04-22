@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.CategoryMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="categoryId"
+            parameterType="com.kama.notes.model.entity.Category">
+        INSERT INTO category (name, parent_category_id)
+        VALUES (#{name}, #{parentCategoryId})
+    </insert>
+
+    <insert id="insertBatch" parameterType="com.kama.notes.model.entity.Category">
+        <if test="categories != null and categories.size > 0">
+            INSERT INTO category (name, parent_category_id)
+            VALUES
+            <foreach collection="categories" item="category" separator=",">
+                (#{category.name}, #{category.parentCategoryId})
+            </foreach>
+        </if>
+        <if test="categories == null or categories.size == 0">
+            SELECT 0
+        </if>
+    </insert>
+
+    <select id="categoryList" resultType="com.kama.notes.model.entity.Category">
+        SELECT *
+        FROM category
+    </select>
+
+    <select id="findById" resultType="com.kama.notes.model.entity.Category">
+        SELECT *
+        FROM category
+        WHERE category_id = #{parentCategoryId}
+    </select>
+
+    <select id="findByIdBatch" resultType="com.kama.notes.model.entity.Category">
+        <if test="categoryIds != null and categoryIds.size > 0">
+            SELECT * FROM category
+            WHERE category_id IN
+            <foreach collection="categoryIds" item="categoryId" open="(" separator="," close=")">
+                #{categoryId}
+            </foreach>
+        </if>
+        <if test="categoryIds == null or categoryIds.size == 0">
+            SELECT * FROM category WHERE 1 = 0
+        </if>
+    </select>
+
+    <select id="findByIdOrParentId" resultType="com.kama.notes.model.entity.Category">
+        SELECT *
+        FROM category
+        WHERE category_id = #{categoryId}
+           OR parent_category_id = #{categoryId}
+    </select>
+
+    <delete id="deleteById">
+        DELETE
+        FROM category
+        WHERE category_id = #{categoryId}
+    </delete>
+
+    <delete id="deleteByIdBatch">
+        <if test="categoryIds != null and categoryIds.size > 0">
+            DELETE
+            FROM category
+            WHERE category_id IN
+            <foreach collection="categoryIds" item="categoryId" open="(" separator="," close=")">
+                #{categoryId}
+            </foreach>
+        </if>
+        <if test="categoryIds == null or categoryIds.size == 0">
+            DELETE FROM category WHERE 1 = 0
+        </if>
+    </delete>
+
+    <update id="update" parameterType="com.kama.notes.model.entity.Category">
+        UPDATE category
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+        </set>
+        WHERE category_id = #{categoryId}
+    </update>
+</mapper>

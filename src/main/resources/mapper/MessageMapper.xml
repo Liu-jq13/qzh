@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.MessageMapper">
+    <resultMap id="BaseResultMap" type="com.kama.notes.model.entity.Message">
+        <id column="message_id" property="messageId"/>
+        <result column="receiver_id" property="receiverId"/>
+        <result column="sender_id" property="senderId"/>
+        <result column="type" property="type"/>
+        <result column="target_id" property="targetId"/>
+        <result column="content" property="content"/>
+        <result column="is_read" property="isRead"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        message_id, receiver_id, sender_id, type, target_id, content, is_read, created_at, updated_at
+    </sql>
+
+    <insert id="insert" parameterType="com.kama.notes.model.entity.Message" useGeneratedKeys="true" keyProperty="messageId">
+        INSERT INTO message (
+            receiver_id, sender_id, type, target_id, content, is_read, created_at, updated_at
+        ) VALUES (
+            #{receiverId}, #{senderId}, #{type}, #{targetId}, #{content}, #{isRead}, #{createdAt}, #{updatedAt}
+        )
+    </insert>
+
+    <select id="selectByParams" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM message
+        <where>
+            receiver_id = #{userId}
+            <if test="params.type != null">
+                AND type = #{params.type}
+            </if>
+            <if test="params.isRead != null">
+                AND is_read = #{params.isRead}
+            </if>
+            <if test="params.startTime != null">
+                AND created_at >= #{params.startTime}
+            </if>
+            <if test="params.endTime != null">
+                AND created_at &lt;= #{params.endTime}
+            </if>
+        </where>
+        ORDER BY ${params.sortField} ${params.sortOrder}
+        LIMIT #{params.pageSize}
+        OFFSET #{offset}
+    </select>
+
+    <select id="countByParams" resultType="int">
+        SELECT COUNT(*)
+        FROM message
+        <where>
+            receiver_id = #{userId}
+            <if test="params.type != null">
+                AND type = #{params.type}
+            </if>
+            <if test="params.isRead != null">
+                AND is_read = #{params.isRead}
+            </if>
+            <if test="params.startTime != null">
+                AND created_at >= #{params.startTime}
+            </if>
+            <if test="params.endTime != null">
+                AND created_at &lt;= #{params.endTime}
+            </if>
+        </where>
+    </select>
+
+    <update id="markAsRead">
+        UPDATE message
+        SET is_read = true,
+            updated_at = NOW()
+        WHERE message_id = #{messageId}
+        AND receiver_id = #{userId}
+    </update>
+
+    <update id="markAllAsRead">
+        UPDATE message
+        SET is_read = true,
+            updated_at = NOW()
+        WHERE receiver_id = #{userId}
+        AND is_read = false
+    </update>
+
+    <delete id="deleteMessage">
+        DELETE FROM message
+        WHERE message_id = #{messageId}
+        AND receiver_id = #{userId}
+    </delete>
+
+    <select id="countUnread" resultType="int">
+        SELECT COUNT(*)
+        FROM message
+        WHERE receiver_id = #{userId}
+        AND is_read = false
+    </select>
+
+    <select id="countUnreadByType" resultType="com.kama.notes.model.vo.message.UnreadCountByType">
+        SELECT 
+            type,
+            COUNT(*) as count
+        FROM message
+        WHERE receiver_id = #{userId}
+        AND is_read = false
+        GROUP BY type
+    </select>
+</mapper> 

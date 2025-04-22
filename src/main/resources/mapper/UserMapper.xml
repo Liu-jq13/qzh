@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.UserMapper">
+
+    <select id="findByAccount" resultType="com.kama.notes.model.entity.User">
+        SELECT *
+        FROM user
+        WHERE account = #{account}
+    </select>
+
+    <insert id="insert" keyProperty="userId" useGeneratedKeys="true">
+        INSERT INTO user (
+            account, 
+            username, 
+            password,
+            email,
+            email_verified,
+            gender,
+            is_banned,
+            is_admin,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{account}, 
+            #{username}, 
+            #{password},
+            #{email},
+            #{emailVerified},
+            3,
+            0,
+            0,
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <select id="findById" resultType="com.kama.notes.model.entity.User">
+        SELECT *
+        FROM user
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="findByIdBatch" resultType="com.kama.notes.model.entity.User">
+        SELECT *
+        FROM user
+        WHERE
+        <if test="userIds != null and userIds.size > 0">
+            user_id IN
+            <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+                #{userId}
+            </foreach>
+        </if>
+        <if test="userIds == null or userIds.size == 0">
+            1 = 2 <!-- 当 userIds 为空时，返回一个永远不成立的条件 -->
+        </if>
+    </select>
+
+    <sql id="whereClause">
+        <where>
+            <if test="queryParams.userId != null">
+                AND user_id = #{queryParams.userId}
+            </if>
+            <if test="queryParams.account != null">
+                AND `account` LIKE CONCAT('%', #{queryParams.account}, '%')
+            </if>
+            <if test="queryParams.username != null">
+                AND username LIKE CONCAT('%', #{queryParams.username}, '%')
+            </if>
+            <if test="queryParams.isAdmin != null">
+                AND is_admin = #{queryParams.isAdmin}
+            </if>
+            <if test="queryParams.isBanned != null">
+                AND is_banned = #{queryParams.isBanned}
+            </if>
+        </where>
+    </sql>
+
+    <select id="findByQueryParam" resultType="com.kama.notes.model.entity.User">
+        SELECT *
+        FROM user
+        <include refid="whereClause"/>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByQueryParam" resultType="integer">
+        SELECT COUNT(*)
+        FROM user
+        <include refid="whereClause" />
+    </select>
+
+    <update id="update" parameterType="com.kama.notes.model.dto.user.UpdateUserRequest">
+        UPDATE user
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="birthday != null">birthday = #{birthday},</if>
+            <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="school != null">school = #{school},</if>
+            <if test="signature != null">signature = #{signature}</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateLastLoginAt">
+        UPDATE user
+        SET last_login_at = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId}
+    </update>
+
+    <select id="getTodayLoginCount" resultType="integer">
+        SELECT COUNT(*)
+        FROM user
+        WHERE DATE(last_login_at) = CURDATE()
+    </select>
+
+    <select id="getTodayRegisterCount" resultType="integer">
+        SELECT COUNT(*)
+        FROM user
+        WHERE DATE(created_at) = CURDATE()
+    </select>
+
+    <select id="getTotalRegisterCount" resultType="integer">
+        SELECT COUNT(*)
+        FROM user
+    </select>
+
+    <select id="findByEmail" resultType="com.kama.notes.model.entity.User">
+        SELECT * FROM user WHERE email = #{email}
+    </select>
+
+    <!-- 搜索用户 -->
+    <select id="searchUsers" resultType="com.kama.notes.model.entity.User">
+        SELECT * FROM user 
+        WHERE 
+            username LIKE CONCAT(#{keyword}, '%')
+            OR account LIKE CONCAT(#{keyword}, '%')
+            OR email LIKE CONCAT(#{keyword}, '%')
+        ORDER BY 
+            CASE 
+                WHEN username = #{keyword} THEN 1
+                WHEN account = #{keyword} THEN 2
+                WHEN email = #{keyword} THEN 3
+                WHEN username LIKE CONCAT(#{keyword}, '%') THEN 4
+                WHEN account LIKE CONCAT(#{keyword}, '%') THEN 5
+                WHEN email LIKE CONCAT(#{keyword}, '%') THEN 6
+                ELSE 7
+            END
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+</mapper>

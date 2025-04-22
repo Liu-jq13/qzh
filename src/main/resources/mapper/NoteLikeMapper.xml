@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.NoteLikeMapper">
+    <select id="findUserLikedNoteIds" resultType="integer">
+        <if test="noteIds != null and noteIds.size > 0">
+            SELECT note_id FROM note_like
+            WHERE note_id IN
+            <foreach collection="noteIds" item="noteId" open="(" separator="," close=")">
+                #{noteId}
+            </foreach>
+            AND user_id = #{userId}
+        </if>
+        <if test="noteIds == null or noteIds.size == 0">
+            SELECT note_id FROM note_like WHERE 1 = 0
+        </if>
+    </select>
+
+    <select id="findByUserIdAndNoteId" resultType="com.kama.notes.model.entity.NoteLike">
+        SELECT *
+        FROM note_like
+        WHERE user_id = #{userId}
+          AND note_id = #{noteId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO note_like (user_id, note_id)
+        VALUES (#{userId}, #{noteId})
+    </insert>
+
+    <delete id="delete">
+        DELETE
+        FROM note_like
+        WHERE user_id = #{userId}
+          AND note_id = #{noteId}
+    </delete>
+</mapper>

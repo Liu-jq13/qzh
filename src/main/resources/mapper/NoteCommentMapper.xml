@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.NoteCommentMapper">
+    
+    <resultMap id="BaseResultMap" type="com.kama.notes.model.entity.NoteComment">
+        <id column="id" property="id" />
+        <result column="note_id" property="noteId" />
+        <result column="user_id" property="userId" />
+        <result column="content" property="content" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="is_deleted" property="isDeleted" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, note_id, user_id, content, created_at, updated_at, is_deleted
+    </sql>
+
+    <insert id="insert" parameterType="com.kama.notes.model.entity.NoteComment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO note_comment (
+            note_id, user_id, content, created_at, updated_at, is_deleted
+        ) VALUES (
+            #{noteId}, #{userId}, #{content}, #{createdAt}, #{updatedAt}, #{isDeleted}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.kama.notes.model.entity.NoteComment">
+        UPDATE note_comment
+        SET updated_at = #{updatedAt},
+            is_deleted = #{isDeleted}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM note_comment
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByNoteId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM note_comment
+        WHERE note_id = #{noteId}
+        AND is_deleted = false
+        ORDER BY created_at DESC
+    </select>
+</mapper> 

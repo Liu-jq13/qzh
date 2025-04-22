@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.CollectionNoteMapper">
+    <select id="findUserCollectedNoteIds" resultType="integer">
+        <if test="noteIds != null and noteIds.size > 0">
+            SELECT note_id
+            FROM collection_note
+            WHERE collection_id IN (
+            SELECT collection_id
+            FROM collection
+            WHERE creator_id = #{userId}
+            )
+            AND note_id IN
+            <foreach collection="noteIds" item="noteId" open="(" separator="," close=")">
+                #{noteId}
+            </foreach>
+        </if>
+        <if test="noteIds == null or noteIds.size == 0">
+            SELECT note_id FROM collection_note WHERE 1 = 0
+        </if>
+    </select>
+
+    <select id="filterCollectionIdsByNoteId" resultType="integer">
+        SELECT collection_id
+        FROM collection_note
+        WHERE note_id = #{noteId}
+        <if test="collectionIds != null and collectionIds.size > 0">
+            AND collection_id IN
+            <foreach collection="collectionIds" item="collectionId" open="(" separator="," close=")">
+                #{collectionId}
+            </foreach>
+        </if>
+        <if test="collectionIds == null or collectionIds.size == 0">
+            AND 1 = 0
+        </if>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO collection_note (collection_id, note_id)
+        VALUES (#{collectionId}, #{noteId})
+    </insert>
+
+    <delete id="deleteByCollectionId">
+        DELETE
+        FROM collection_note
+        WHERE collection_id = #{collectionId}
+    </delete>
+
+    <delete id="deleteByCollectionIdAndNoteId">
+        DELETE
+        FROM collection_note
+        WHERE collection_id = #{collectionId}
+          AND note_id = #{noteId}
+    </delete>
+</mapper>

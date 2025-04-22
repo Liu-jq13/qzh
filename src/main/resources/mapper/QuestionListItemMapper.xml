@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.QuestionListItemMapper">
+    <insert id="insert">
+        INSERT INTO question_list_item (question_list_id, question_id, `rank`)
+        VALUES (#{questionListId}, #{questionId}, #{rank})
+    </insert>
+
+    <resultMap id="QuestionListItemVOResultMap" type="com.kama.notes.model.vo.questionListItem.QuestionListItemVO">
+        <id property="questionListId" column="question_list_id"/>
+        <id property="rank" column="rank"/>
+        <association property="question"
+                     javaType="com.kama.notes.model.vo.question.BaseQuestionVO">
+            <id property="questionId" column="question.question_id"/>
+            <result property="title" column="question.title"/>
+            <result property="viewCount" column="question.view_count"/>
+            <result property="examPoint" column="question.exam_point"/>
+            <result property="difficulty" column="question.difficulty"/>
+            <result property="categoryId" column="question.category_id"/>
+        </association>
+    </resultMap>
+
+    <sql id="findByIdSelectClause">
+        SELECT qli.question_list_id,
+               qli.rank,
+               q.question_id AS "question.question_id",
+               q.title       AS "question.title",
+               q.view_count  AS "question.view_count",
+               q.exam_point  AS "question.exam_point",
+               q.difficulty  AS "question.difficulty",
+               q.category_id AS "question.category_id"
+        FROM question_list_item qli
+                 LEFT JOIN question q
+                           ON qli.question_id = q.question_id
+        WHERE qli.question_list_id = #{questionListId}
+        ORDER BY qli.rank
+    </sql>
+
+    <select id="findByQuestionListId" resultMap="QuestionListItemVOResultMap">
+        <include refid="findByIdSelectClause"/>
+    </select>
+
+    <select id="countByQuestionListId" resultType="int">
+        SELECT COUNT(*)
+        FROM question_list_item
+        WHERE question_list_id = #{questionListId}
+    </select>
+
+    <select id="findByQuestionListIdPage" resultMap="QuestionListItemVOResultMap">
+        <include refid="findByIdSelectClause" />
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <delete id="deleteByQuestionListIdAndQuestionId">
+        DELETE
+        FROM question_list_item
+        WHERE question_list_id = #{questionListId}
+          AND question_id = #{questionId}
+    </delete>
+
+    <delete id="deleteByQuestionListId">
+        DELETE
+        FROM question_list_item
+        WHERE question_list_id = #{questionListId}
+    </delete>
+
+    <select id="nextRank" resultType="int">
+        SELECT COALESCE(MAX(`rank`), 0) + 1
+        FROM `question_list_item`
+        WHERE `question_list_id` = ${questionListId};
+    </select>
+
+    <update id="updateQuestionRank" parameterType="com.kama.notes.model.entity.QuestionListItem">
+        UPDATE `question_list_item`
+        SET `rank` = #{rank}
+        WHERE `question_list_id` = #{questionListId}
+          AND `question_id` = #{questionId}
+    </update>
+</mapper>
+

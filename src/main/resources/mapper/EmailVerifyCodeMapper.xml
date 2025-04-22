@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.EmailVerifyCodeMapper">
+    
+    <insert id="insert" parameterType="com.kama.notes.model.entity.EmailVerifyCode" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO email_verify_code (
+            email, code, type, expired_at, created_at, used
+        ) VALUES (
+            #{email}, #{code}, #{type}, #{expiredAt}, NOW(), FALSE
+        )
+    </insert>
+
+    <select id="findLatestValidCode" resultType="com.kama.notes.model.entity.EmailVerifyCode">
+        SELECT * FROM email_verify_code
+        WHERE email = #{email}
+        AND type = #{type}
+        AND used = FALSE
+        AND expired_at > NOW()
+        ORDER BY created_at DESC
+        LIMIT 1
+    </select>
+
+    <update id="markAsUsed">
+        UPDATE email_verify_code
+        SET used = TRUE
+        WHERE id = #{id}
+    </update>
+
+</mapper> 

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>验证码</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="color: #333; margin-bottom: 20px;">卡码笔记 - 验证码</h2>
+        <p style="color: #666; line-height: 1.6;">亲爱的用户：</p>
+        <p style="color: #666; line-height: 1.6;">您正在进行<span th:text="${operationType}">操作</span>，验证码为：</p>
+        <div style="background-color: #f8f8f8; padding: 15px; border-radius: 4px; text-align: center; margin: 20px 0;">
+            <span style="font-size: 24px; font-weight: bold; color: #1890ff;" th:text="${verifyCode}">123456</span>
+        </div>
+        <p style="color: #666; line-height: 1.6;">验证码有效期为15分钟，请尽快完成验证。</p>
+        <p style="color: #666; line-height: 1.6;">如果这不是您的操作，请忽略此邮件。</p>
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #999; font-size: 12px;">
+            <p>此邮件由系统自动发送，请勿直接回复。</p>
+            <p>© 2024 卡码笔记. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html> 

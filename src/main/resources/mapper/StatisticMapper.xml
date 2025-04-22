@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.StatisticMapper">
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO statistic (login_count, register_count, total_register_count, note_count, submit_note_count,
+                               total_note_count, date)
+        VALUES (#{loginCount}, #{registerCount}, #{totalRegisterCount}, #{noteCount}, #{submitNoteCount},
+                #{totalNoteCount}, #{date})
+    </insert>
+
+    <select id="countStatistic" resultType="integer">
+        SELECT COUNT(*)
+        FROM statistic
+    </select>
+
+    <select id="findByPage" resultType="com.kama.notes.model.entity.Statistic">
+        SELECT *
+        FROM statistic
+        ORDER BY date DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.CollectionMapper">
+
+    <select id="findById" resultType="com.kama.notes.model.entity.Collection">
+        SELECT *
+        FROM collection
+        WHERE collection_id = #{collectionId}
+    </select>
+
+    <select id="findByCreatorId" resultType="com.kama.notes.model.entity.Collection">
+        SELECT *
+        FROM collection
+        WHERE creator_id = #{creatorId}
+    </select>
+
+    <select id="findByIdAndCreatorId" resultType="com.kama.notes.model.entity.Collection">
+        SELECT *
+        FROM collection
+        WHERE collection_id = #{collectionId}
+          AND creator_id = #{creatorId}
+    </select>
+
+    <select id="countByCreatorIdAndNoteId" resultType="java.lang.Integer">
+        SELECT COUNT(note_id)
+        FROM collection_note cn
+                 LEFT JOIN collection c ON cn.collection_id = c.collection_id
+        WHERE creator_id = #{creatorId}
+          AND note_id = #{noteId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="collectionId">
+        INSERT INTO collection (name, description, creator_id)
+        VALUES (#{name}, #{description}, #{creatorId})
+    </insert>
+
+    <update id="update">
+        UPDATE collection
+        SET name        = #{name},
+            description = #{description}
+        WHERE collection_id = #{collectionId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE
+        FROM collection
+        WHERE collection_id = #{collectionId}
+    </delete>
+</mapper>

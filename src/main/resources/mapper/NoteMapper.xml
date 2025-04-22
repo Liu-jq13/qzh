@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.NoteMapper">
+
+    <sql id="whereClause">
+        <where>
+            <if test="params.questionId != null">
+                AND question_id = #{params.questionId}
+            </if>
+            <if test="params.authorId != null">
+                AND author_id = #{params.authorId}
+            </if>
+            <if test="params.collectionId != null">
+                AND note_id IN (SELECT note_id FROM collection_note WHERE collection_id = #{params.collectionId})
+            </if>
+            <if test="params.recentDays != null">
+                AND created_at >= DATE_SUB(CURRENT_DATE, INTERVAL #{params.recentDays} DAY)
+            </if>
+        </where>
+    </sql>
+
+    <select id="countNotes" resultType="int">
+        SELECT COUNT(*) FROM note
+        <include refid="whereClause"/>
+    </select>
+
+    <select id="findByQueryParams" resultType="com.kama.notes.model.entity.Note">
+        SELECT * FROM note
+        <include refid="whereClause"/>
+        <choose>
+            <when test="params.sort != null and params.sort == 'create'">
+                ORDER BY created_at
+                <choose>
+                    <when test="params.order != null and (params.order == 'asc' or params.order == 'desc')">
+                        ${params.order}
+                    </when>
+                    <otherwise>
+                        ASC
+                    </otherwise>
+                </choose>
+            </when>
+        </choose>
+        LIMIT #{limit} OFFSET ${offset}
+    </select>
+
+    <select id="filterFinishedQuestionIdsByUser" resultType="integer">
+        <if test="questionIds != null and questionIds.size > 0">
+            SELECT question_id
+            FROM note
+            WHERE author_id = #{authorId}
+            AND question_id IN
+            <foreach collection="questionIds" item="questionId" open="(" separator="," close=")">
+                #{questionId}
+            </foreach>
+        </if>
+        <if test="questionIds == null or questionIds.size == 0">
+            SELECT question_id FROM note WHERE 1 = 0
+        </if>
+    </select>
+
+    <select id="findByAuthorIdAndQuestionId" resultType="com.kama.notes.model.entity.Note">
+        SELECT *
+        FROM note
+        WHERE question_id = #{questionId}
+          AND author_id = #{authorId}
+    </select>
+
+    <select id="findByAuthorId" resultType="com.kama.notes.model.entity.Note">
+        SELECT *
+        FROM note
+        WHERE author_id = #{authorId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="noteId">
+        INSERT INTO note (question_id, author_id, content)
+        VALUES (#{questionId}, #{authorId}, #{content})
+    </insert>
+
+    <resultMap id="BaseResultMap" type="com.kama.notes.model.entity.Note">
+        <id column="note_id" property="noteId"/>
+        <result column="author_id" property="authorId"/>
+        <result column="question_id" property="questionId"/>
+        <result column="content" property="content"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="comment_count" property="commentCount"/>
+        <result column="collect_count" property="collectCount"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT * FROM note WHERE note_id = #{noteId}
+    </select>
+
+    <update id="update">
+        UPDATE note
+        SET content = #{content}
+        WHERE note_id = #{noteId}
+    </update>
+
+    <update id="likeNote">
+        UPDATE note
+        SET like_count = like_count + 1
+        WHERE note_id = #{noteId}
+    </update>
+
+    <update id="unlikeNote">
+        UPDATE note
+        SET like_count = like_count - 1
+        WHERE note_id = #{noteId}
+    </update>
+
+    <update id="collectNote">
+        UPDATE note
+        SET collect_count = collect_count + 1
+        WHERE note_id = #{noteId}
+    </update>
+
+    <update id="unCollectNote">
+        UPDATE note
+        SET collect_count = collect_count - 1
+        WHERE note_id = #{noteId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE
+        FROM note
+        WHERE note_id = #{noteId}
+    </delete>
+
+    <select id="findCollections" resultType="com.kama.notes.model.entity.Collection">
+        SELECT *
+        FROM collection
+        WHERE collection_id = #{collectionId}
+    </select>
+
+    <resultMap id="NoteRankListItemMap" type="com.kama.notes.model.vo.note.NoteRankListItem">
+        <result property="userId" column="author_id"/>
+        <result property="username" column="username"/>
+        <result property="avatarUrl" column="avatar_url"/>
+        <result property="noteCount" column="author_notes_count"/>
+        <result property="rank" column="rank"/>
+    </resultMap>
+
+    <select id="submitNoteRank" resultMap="NoteRankListItemMap">
+        SELECT author_id,
+               user.username,
+               user.avatar_url,
+               COUNT(note_id) AS author_notes_count,
+               RANK() OVER (ORDER BY COUNT(note_id) DESC) AS `rank`
+        FROM note
+                 INNER JOIN user ON note.author_id = user.user_id
+        WHERE DATE (note.created_at) = CURDATE()
+        GROUP BY author_id, user.username, user.avatar_url
+        ORDER BY author_notes_count DESC LIMIT 10
+    </select>
+
+    <resultMap id="submitNoteHeatMapMap" type="com.kama.notes.model.vo.note.NoteHeatMapItem">
+        <result property="count" column="note_count"/>
+        <result property="date" column="note_date"/>
+        <result property="rank" column="note_rank"/>
+    </resultMap>
+
+    <!-- sql 复杂度较高，导致使用 IDEA 的 command + option + L 格式化时，
+         COUNT 函数和 DATE 函数前后会被自动加上空格，这将导致 sql 语法错误
+         切记切记这段 sql 不要使用 IDEA 进行自动格式化！！！-->
+    <select id="submitNoteHeatMap" resultMap="submitNoteHeatMapMap">
+        WITH DailyNoteCounts AS (
+            SELECT author_id,
+            DATE(created_at) AS note_date,
+            COUNT(note_id) AS note_count
+        FROM note
+        WHERE DATE(created_at) BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 94 DAY) AND CURRENT_DATE
+        GROUP BY author_id, DATE(created_at)
+            ),
+            RankedNotes AS (
+        SELECT author_id, note_date, note_count,
+            RANK() OVER (PARTITION BY note_date ORDER BY note_count DESC) AS note_rank
+        FROM DailyNoteCounts
+            )
+        SELECT note_date,
+               note_count,
+               note_rank
+        FROM RankedNotes
+        WHERE author_id = #{authorId};
+    </select>
+
+    <resultMap id="submitNoteTop3CountMap" type="com.kama.notes.model.vo.note.Top3Count">
+        <result property="thisMonthTop3Count" column="this_month_top_3"/>
+        <result property="lastMonthTop3Count" column="last_month_top_3"/>
+    </resultMap>
+
+    <!-- 同上，不要格式化-->
+    <select id="submitNoteTop3Count" resultMap="submitNoteTop3CountMap">
+        WITH DailyNoteCounts AS (SELECT author_id,
+            DATE(created_at) AS note_date
+           , COUNT(note_id) AS note_count
+        FROM note
+        WHERE DATE(created_at) BETWEEN DATE_SUB(CURDATE()
+            , INTERVAL DAYOFMONTH(CURDATE()) - 1 DAY) - INTERVAL 1 MONTH
+          AND LAST_DAY(CURDATE())
+        GROUP BY author_id, DATE(created_at)
+            ),
+            RankedNotes AS (
+        SELECT author_id, note_date, note_count, RANK() OVER (PARTITION BY note_date ORDER BY note_count DESC) AS note_rank
+        FROM DailyNoteCounts
+            )
+        SELECT author_id,
+               SUM(
+                       CASE
+                           WHEN
+        <![CDATA[note_rank <= 3]]>
+                                   AND note_date BETWEEN DATE_SUB(CURDATE(), INTERVAL DAYOFMONTH(CURDATE()) - 1 DAY) -
+                       INTERVAL 1 MONTH
+                           AND LAST_DAY(DATE_SUB(CURDATE(), INTERVAL 1 MONTH))
+                       THEN 1
+                       ELSE 0
+                       END
+               ) AS last_month_top_3,
+               SUM(
+                       CASE
+                           WHEN
+        <![CDATA[note_rank <= 3]]>
+                                   AND note_date BETWEEN DATE_SUB(CURDATE(), INTERVAL DAYOFMONTH(CURDATE()) - 1 DAY)
+                                   AND LAST_DAY(CURDATE())
+                               THEN 1
+                           ELSE 0
+                           END
+               ) AS this_month_top_3
+        FROM RankedNotes
+        WHERE author_id = #{authorId}
+        GROUP BY author_id
+    </select>
+
+    <select id="getTodayNoteCount" resultType="integer">
+        SELECT COUNT(*)
+        FROM note
+        WHERE DATE(created_at) = CURDATE()
+    </select>
+
+    <select id="getTodaySubmitNoteUserCount" resultType="integer">
+        SELECT COUNT(DISTINCT author_id)
+        FROM note
+        WHERE DATE(created_at) = CURDATE()
+        GROUP BY author_id
+    </select>
+
+    <select id="getTotalNoteCount" resultType="integer">
+        SELECT COUNT(*)
+        FROM note
+    </select>
+
+    <update id="incrementCommentCount">
+        UPDATE note 
+        SET comment_count = comment_count + 1,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE note_id = #{noteId}
+    </update>
+
+    <update id="decrementCommentCount">
+        UPDATE note 
+        SET comment_count = CASE 
+            WHEN comment_count > 0 THEN comment_count - 1 
+            ELSE 0 
+        END,
+        updated_at = CURRENT_TIMESTAMP
+        WHERE note_id = #{noteId}
+    </update>
+
+    <!-- 搜索笔记 -->
+    <select id="searchNotes" resultType="com.kama.notes.model.entity.Note">
+        SELECT 
+            n.*,
+            MATCH(n.search_vector) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE) as relevance
+        FROM note n
+        WHERE MATCH(n.search_vector) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE)
+        ORDER BY relevance DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 根据标签搜索笔记 -->
+    <select id="searchNotesByTag" resultType="com.kama.notes.model.entity.Note">
+        SELECT DISTINCT
+            n.*,
+            MATCH(n.search_vector) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE) as relevance
+        FROM note n
+        LEFT JOIN note_tag nt ON n.id = nt.note_id
+        LEFT JOIN tag t ON nt.tag_id = t.id
+        WHERE 
+            MATCH(n.search_vector) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE)
+            OR t.name LIKE CONCAT('%', #{tag}, '%')
+        ORDER BY relevance DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+</mapper>

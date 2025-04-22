@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.CommentLikeMapper">
+    <!-- 评论点赞结果映射 -->
+    <resultMap id="commentLikeMap" type="com.kama.notes.model.entity.CommentLike">
+        <id property="commentLikeId" column="comment_like_id"/>
+        <result property="commentId" column="comment_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 插入评论点赞 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="commentLikeId">
+        INSERT INTO comment_like (
+            comment_id, user_id, created_at
+        ) VALUES (
+            #{commentId}, #{userId}, #{createdAt}
+        )
+    </insert>
+
+    <!-- 删除评论点赞 -->
+    <delete id="delete">
+        DELETE FROM comment_like
+        WHERE comment_id = #{commentId} AND user_id = #{userId}
+    </delete>
+
+    <!-- 查询用户点赞的评论ID列表 -->
+    <select id="findUserLikedCommentIds" resultType="integer">
+        SELECT DISTINCT comment_id FROM comment_like
+        WHERE user_id = #{userId}
+        AND comment_id IN
+        <foreach collection="commentIds" item="commentId" open="(" separator="," close=")">
+            #{commentId}
+        </foreach>
+    </select>
+</mapper> 

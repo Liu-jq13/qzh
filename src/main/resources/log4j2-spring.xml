@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <!--
+        status="WARN": Log4j2 自身的日志输出级别（仅用来调试日志系统本身的配置）
+        monitorInterval="30": 每隔 30 秒自动检测配置文件是否有修改，若有修改会重新加载
+    -->
+    <Appenders>
+        <!-- 控制台输出 -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%highlight{%-5level}] [%thread] [traceId=%X{traceId}] %logger{36} - %msg%n" />
+        </Console>
+
+        <!-- 轮盘日志 -->
+        <RollingFile name="File"
+                     fileName="logs/app.log"
+                     filePattern="logs/app-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout
+                    pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%highlight{%-5level}] [%thread] [traceId=%X{traceId}] %logger{36} - %msg%n" />
+            <Policies>
+                <!-- 时间滚动策略，每日创建一个日志文件 -->
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+                <!-- 大小滚动策略，单个文件达到 10MB 切分 -->
+                <SizeBasedTriggeringPolicy size="10MB" />
+            </Policies>
+            <!-- 控制保留多少历史文件，超过数量会自动删除 -->
+            <DefaultRolloverStrategy max="30" />
+        </RollingFile>
+    </Appenders>
+
+    <!-- 2. 配置日志记录器（Logger） -->
+    <Loggers>
+        <!-- 指定某些包或类的日志级别，如果需要可以继续添加 -->
+        <Logger name="com.kama" level="debug" additivity="false">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="File" />
+        </Logger>
+
+        <!-- 3. Root Logger，默认日志级别为 info -->
+        <Root level="info">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="File" />
+        </Root>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.notes.mapper.NoteCollectMapper">
+    <!-- 收藏结果映射 -->
+    <resultMap id="BaseResultMap" type="com.kama.notes.model.entity.NoteCollect">
+        <id column="collect_id" property="collectId"/>
+        <result column="note_id" property="noteId"/>
+        <result column="user_id" property="userId"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <!-- 插入收藏记录 -->
+    <insert id="insert" parameterType="com.kama.notes.model.entity.NoteCollect" useGeneratedKeys="true" keyProperty="collectId">
+        INSERT INTO note_collect (note_id, user_id)
+        VALUES (#{noteId}, #{userId})
+    </insert>
+
+    <!-- 删除收藏记录 -->
+    <delete id="delete">
+        DELETE FROM note_collect
+        WHERE note_id = #{noteId}
+          AND user_id = #{userId}
+    </delete>
+
+    <!-- 根据用户ID和笔记ID查询收藏记录 -->
+    <select id="findByNoteIdAndUserId" resultMap="BaseResultMap">
+        SELECT *
+        FROM note_collect
+        WHERE note_id = #{noteId}
+          AND user_id = #{userId}
+        LIMIT 1
+    </select>
+
+    <!-- 查询用户收藏的笔记ID列表 -->
+    <select id="findNoteIdsByUserId" resultType="java.lang.Integer">
+        SELECT note_id
+        FROM note_collect
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+</mapper> 
